@@ -41,3 +41,29 @@ class Workspace(models.Model):
         blank=False,
         null=False
     )
+
+
+class Message(models.Model):
+    """Messages database model."""
+
+    author = models.TextField(
+        verbose_name='Name of user who posted the message.',
+        blank=False,
+        null=False
+    )
+    datetime = models.DateTimeField(
+        verbose_name='Date and time when message posted.',
+        blank=False,
+        null=False
+    )
+    text = models.TextField(
+        verbose_name='Message text.',
+        blank=False,
+        null=False
+    )
+    link = models.TextField(
+        verbose_name='Unique message link.',
+        blank=False,
+        null=False,
+        unique=True
+    )
