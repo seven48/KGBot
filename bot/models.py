@@ -35,3 +35,9 @@ class Workspace(models.Model):
         blank=False,
         null=False
     )
+    in_progress = models.BooleanField(
+        verbose_name='Flag workspace is busy by parser.',
+        default=True,
+        blank=False,
+        null=False
+    )
