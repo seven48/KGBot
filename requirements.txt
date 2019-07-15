@@ -1,1 +1,2 @@
 Django==2.2.3
+celery==4.3
