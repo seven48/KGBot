@@ -12,3 +12,6 @@ db.sqlite3
 
 # Pycharm stuff
 .idea/
+
+# Webdriver logs
+geckodriver.log
