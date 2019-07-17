@@ -1,5 +1,7 @@
 from django.db import models
 
+from bot.tasks import load_history
+
 
 class Channel(models.Model):
     """Channel database model."""
@@ -41,6 +43,13 @@ class Workspace(models.Model):
         blank=False,
         null=False
     )
+
+    def save(self):
+        if not self.id:
+            super().save()
+            load_history.delay(self.id)
+        else:
+            super().save()
 
 
 class Message(models.Model):
