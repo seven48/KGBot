@@ -40,3 +40,21 @@ class BaseWorkspaceParser(BaseSlackParser):
     def __init__(self, workspace, **kwargs):
         self.workspace = workspace
         super().__init__(self.workspace.url, **kwargs)
+
+        self.login(self.workspace.username, self.workspace.password)
+
+    def login(self, username, password):
+        """ Auth in Slack workspace. """
+        email_field = self.browser.find_by_id('email')
+        email_field.fill(username)
+
+        password_field = self.browser.find_by_id('password')
+        password_field.fill(password)
+
+        submit_btn = self.browser.find_by_id('signin_btn')
+        submit_btn.click()
+
+        current_url = self.browser.url.split('/')[-1]
+
+        if current_url != 'messages':
+            raise ConnectionAbortedError()
