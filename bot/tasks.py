@@ -1,3 +1,4 @@
+from bot.core.load_history import LoadHistory
 from KGBot.celery import app
 
 
@@ -8,9 +9,13 @@ def workspace_supervisor():
 
 
 @app.task
-def load_history():
+def load_history(pk):
     """Task for first time grab. """
-    pass
+    from bot.models import Workspace
+
+    workspace = Workspace.objects.get(id=pk)
+
+    LoadHistory(workspace)
 
 
 @app.task

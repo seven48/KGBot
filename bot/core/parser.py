@@ -16,6 +16,8 @@
 
 from splinter import Browser
 
+from urllib.parse import urljoin
+
 
 class BaseSlackParser:
     """Class for basic slack parser functionality. """
@@ -54,7 +56,13 @@ class BaseWorkspaceParser(BaseSlackParser):
         submit_btn = self.browser.find_by_id('signin_btn')
         submit_btn.click()
 
-        current_url = self.browser.url.split('/')[-1]
-
-        if current_url != 'messages':
+        if '/messages/' not in self.browser.url:
             raise ConnectionAbortedError()
+
+    def switch_channel(self, channel_name):
+        """ Switch slack channel to channel name by url visit. """
+        url = urljoin(
+            self.workspace.url,
+            '/messages/{0}'.format(channel_name)
+        )
+        self.browser.visit(url)
