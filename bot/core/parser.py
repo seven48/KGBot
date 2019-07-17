@@ -21,8 +21,8 @@ class BaseSlackParser:
     """Class for basic slack parser functionality. """
 
     def __init__(self, base_addr,
-                 browser="chrome",
-                 executable_path="./drivers/chromedriver",
+                 browser="firefox",
+                 executable_path="./bot/core/drivers/geckodriver",
                  browser_window_size=(1920, 1080),
                  page_load_timeout=30, sticky_timeout=30):
         self._base_addr = base_addr
@@ -37,7 +37,6 @@ class BaseSlackParser:
 class BaseWorkspaceParser(BaseSlackParser):
     """Class for basic workspace parser functionality. """
 
-    def __init__(self, workspace_addr, username, password, **kwargs):
-        super().__init__(workspace_addr, **kwargs)
-        self._username = username
-        self._password = password
+    def __init__(self, workspace, **kwargs):
+        self.workspace = workspace
+        super().__init__(self.workspace.url, **kwargs)
