@@ -11,11 +11,17 @@ def workspace_supervisor():
 @app.task
 def load_history(pk):
     """Task for first time grab. """
-    from bot.models import Workspace
+    from bot.models import Message, Workspace
 
     workspace = Workspace.objects.get(id=pk)
 
-    LoadHistory(workspace)
+    for channel in workspace.channels:
+        parser = LoadHistory(workspace)
+        history = parser.load_history(workspace)
+        messages_obj = [
+            Message(**message) for message in history
+        ]
+        Message.objects.bulk_create(messages_obj)
 
 
 @app.task
