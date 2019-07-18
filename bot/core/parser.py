@@ -18,6 +18,8 @@ from splinter import Browser
 
 from urllib.parse import urljoin
 
+from django.apps import apps
+
 
 class BaseSlackParser:
     """Class for basic slack parser functionality. """
@@ -42,6 +44,8 @@ class BaseWorkspaceParser(BaseSlackParser):
     def __init__(self, workspace, **kwargs):
         self.workspace = workspace
         super().__init__(self.workspace.url, **kwargs)
+
+        self.Message = apps.get_model('bot', 'Message')
 
         self.login(self.workspace.username, self.workspace.password)
 
