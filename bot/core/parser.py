@@ -60,9 +60,6 @@ class BaseWorkspaceParser(BaseSlackParser):
         submit_btn = self.browser.find_by_id('signin_btn')
         submit_btn.click()
 
-        if '/messages/' not in self.browser.url:
-            raise ConnectionAbortedError()
-
     def switch_channel(self, channel_name):
         """ Switch slack channel to channel name by url visit. """
         url = urljoin(
