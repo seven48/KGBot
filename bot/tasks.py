@@ -15,7 +15,7 @@ def load_history(pk):
 
     workspace = Workspace.objects.get(id=pk)
 
-    for channel in workspace.channels:
+    for channel in workspace.channels.all():
         parser = LoadHistory(workspace)
         history = parser.load_history(workspace)
         messages_obj = [
