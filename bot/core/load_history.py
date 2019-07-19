@@ -1,8 +1,9 @@
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
 
-from bot.core.parser import BaseWorkspaceParser
+from bot.core.parser import BaseWorkspaceParser, parse_timestamp
 
 
 class LoadHistory(BaseWorkspaceParser):
@@ -16,17 +17,52 @@ class LoadHistory(BaseWorkspaceParser):
         page_html = self.browser.html
         soup = BeautifulSoup(page_html, 'html.parser')
 
+        all_messages = []
+        buffer_first_message_link = None
+        first_message_link = None
+
         while True:
+            print('Scroll top')  # TODO DELETE
             self.scroll_top()
 
-            all_messages = soup.findAll(
+            checking_messages = soup.findAll(
                 'div',
                 {'class': 'c-virtual_list__item'}
             )
-            all_messages.reverse()
 
-            # TODO check date
-            break
+            # Getting first message
+            for message in checking_messages:
+                message_link = message.find(
+                    'a',
+                    {'class': 'c-timestamp--static'}
+                )
+                if message_link:
+                    buffer_first_message_link = first_message_link
+                    first_message_link = message_link
+                    break
+
+            if not first_message_link:
+                continue
+
+            if buffer_first_message_link == first_message_link:
+                break
+
+            regexp = r'.+\/\w(\d+)$'
+            link = first_message_link['href']
+            timestamp = re.match(regexp, link).group(1)
+            timestamp = int(timestamp)
+            message_datetime = parse_timestamp(timestamp)
+
+            period = timedelta(days=30)
+            minimal_datetime = datetime.now() - period
+
+            print('Checking date')  # TODO DELETE
+
+            if message_datetime < minimal_datetime:
+                print('Found minimal date')  # TODO DELETE
+                break
+
+        all_messages = checking_messages  # TODO Find first
 
         current_author = 'Author'
         for message_el in all_messages:
@@ -47,14 +83,16 @@ class LoadHistory(BaseWorkspaceParser):
                 continue
             message_text = message_text.text
 
-            # TODO PARSING DATETIME STRING
-            message_datetime = datetime.now()
-
             message_url = message_el.find(
                 'a',
                 {'class': 'c-timestamp--static'}
             )
             message_url = message_url['href']
+
+            regexp = r'.+\/\w(\d+)$'
+            timestamp = re.match(regexp, message_url).group(1)
+            timestamp = int(timestamp)
+            message_datetime = parse_timestamp(timestamp)
 
             obj_message = {
                 'author': current_author,
