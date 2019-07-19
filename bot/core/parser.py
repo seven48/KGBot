@@ -14,12 +14,18 @@
 
 """Module with basic building blocks for tests. """
 
+from datetime import datetime
 from urllib.parse import urljoin
 
 from splinter import Browser
 
 from django.apps import apps
 
+
+def parse_timestamp(timestamp):
+    """ Parse datetime from timestamp with microseconds. """
+    time_different = 1000000
+    return datetime.fromtimestamp(timestamp / time_different)
 
 
 class BaseSlackParser:
