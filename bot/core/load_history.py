@@ -16,8 +16,17 @@ class LoadHistory(BaseWorkspaceParser):
         page_html = self.browser.html
         soup = BeautifulSoup(page_html, 'html.parser')
 
-        all_messages = soup.findAll('div', {'class': 'c-virtual_list__item'})
-        all_messages.reverse()
+        while True:
+            self.scroll_top()
+
+            all_messages = soup.findAll(
+                'div',
+                {'class': 'c-virtual_list__item'}
+            )
+            all_messages.reverse()
+
+            # TODO check date
+            break
 
         current_author = 'Author'
         for message_el in all_messages:

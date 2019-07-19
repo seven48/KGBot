@@ -14,11 +14,12 @@
 
 """Module with basic building blocks for tests. """
 
-from splinter import Browser
-
 from urllib.parse import urljoin
 
+from splinter import Browser
+
 from django.apps import apps
+
 
 
 class BaseSlackParser:
@@ -67,3 +68,10 @@ class BaseWorkspaceParser(BaseSlackParser):
             '/messages/{0}'.format(channel_name)
         )
         self.browser.visit(url)
+
+    def scroll_top(self):
+        """ Scroll messages container to top. """
+        js_script = """document
+            .querySelector('div.c-message_list div.c-scrollbar__hider')
+            .scrollTop = 0"""
+        self.browser.execute_script(js_script)
