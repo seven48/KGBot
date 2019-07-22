@@ -4,8 +4,12 @@ from KGBot.celery import app
 
 @app.task
 def workspace_supervisor():
-    """General task for starting grab tasks for workspaces. """
-    pass
+    from bot.models import Workspace
+    workspaces = Workspace.objects.all()
+    for workspace in workspaces:
+        #  get latest messages from all channels
+        #  save it
+        pass
 
 
 @app.task
