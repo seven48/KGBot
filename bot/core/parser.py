@@ -44,6 +44,9 @@ class BaseSlackParser:
         self.browser.driver.set_window_size(*browser_window_size)
         self.browser.visit(self._base_addr)
 
+    def __del__(self):
+        self.browser.quit()
+
 
 class BaseWorkspaceParser(BaseSlackParser):
     """Class for basic workspace parser functionality. """

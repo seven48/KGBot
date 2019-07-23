@@ -1,15 +1,19 @@
 from bot.core.load_history import LoadHistory
+from bot.core.last_messages_parser import LastMessagesParser
 from KGBot.celery import app
 
 
 @app.task
 def workspace_supervisor():
-    from bot.models import Workspace
+    from bot.models import Workspace, Message
     workspaces = Workspace.objects.all()
+    messages = []
     for workspace in workspaces:
-        #  get latest messages from all channels
-        #  save it
-        pass
+        parser = LastMessagesParser(workspace=workspace)
+        messages += [
+            Message(**message) for message in parser.parse_channels()
+        ]
+    Message.objects.bulk_create(messages)
 
 
 @app.task
@@ -26,9 +30,3 @@ def load_history(pk):
             Message(**message) for message in history
         ]
         Message.objects.bulk_create(messages_obj)
-
-
-@app.task
-def load_latest_messages():
-    """Task for loading latest messages. """
-    pass
