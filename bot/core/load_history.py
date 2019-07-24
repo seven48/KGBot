@@ -14,16 +14,15 @@ class LoadHistory(BaseWorkspaceParser):
 
         messages_list = []
 
-        page_html = self.browser.html
-        soup = BeautifulSoup(page_html, 'html.parser')
-
         all_messages = []
         buffer_first_message_link = None
         first_message_link = None
 
         while True:
-            print('Scroll top')  # TODO DELETE
             self.scroll_top()
+
+            page_html = self.browser.html
+            soup = BeautifulSoup(page_html, 'html.parser')
 
             checking_messages = soup.findAll(
                 'div',
@@ -56,10 +55,7 @@ class LoadHistory(BaseWorkspaceParser):
             period = timedelta(days=30)
             minimal_datetime = datetime.now() - period
 
-            print('Checking date')  # TODO DELETE
-
             if message_datetime < minimal_datetime:
-                print('Found minimal date')  # TODO DELETE
                 break
 
         all_messages = checking_messages  # TODO Find first

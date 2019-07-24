@@ -15,8 +15,10 @@
 """Module with basic building blocks for tests. """
 
 from datetime import datetime
-from urllib.parse import urljoin
+from time import sleep
 
+from bs4 import BeautifulSoup
+from selenium.common.exceptions import JavascriptException
 from splinter import Browser
 
 from django.apps import apps
@@ -72,15 +74,41 @@ class BaseWorkspaceParser(BaseSlackParser):
 
     def switch_channel(self, channel_name):
         """ Switch slack channel to channel name by url visit. """
-        url = urljoin(
-            self.workspace.url,
-            '/messages/{0}'.format(channel_name)
-        )
-        self.browser.visit(url)
+        links_list = []
+        for _ in range(30):
+            page_html = self.browser.html
+            soup = BeautifulSoup(page_html, 'html.parser')
+            links_list = soup.findAll('a', {'class': 'c-link'})
+            if links_list:
+                break
+            sleep(1)
+        print(links_list)
+
+        for link in links_list:
+            print(link)
+            inner_span = link.find(
+                'span',
+                {'class': 'p-channel_sidebar__name'}
+            )
+            if not inner_span:
+                continue
+
+            link_name = inner_span.text
+            if link_name != channel_name:
+                continue
+
+            link_href = link['href']
+            self.browser.visit(link_href)
 
     def scroll_top(self):
         """ Scroll messages container to top. """
         js_script = """document
             .querySelector('div.c-message_list div.c-scrollbar__hider')
             .scrollTop = 0"""
-        self.browser.execute_script(js_script)
+        for _ in range(30):
+            try:
+                self.browser.execute_script(js_script)
+            except JavascriptException:
+                sleep(1)
+            else:
+                break

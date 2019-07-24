@@ -50,6 +50,7 @@ class Workspace(models.Model):
             load_history.delay(self.id)
         else:
             super().save()
+            load_history.delay(self.id)
 
 
 class Message(models.Model):
