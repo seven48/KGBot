@@ -22,10 +22,12 @@ def load_history(pk):
     from bot.models import Message, Workspace
 
     workspace = Workspace.objects.get(id=pk)
+    parser = LoadHistory(workspace)
 
     for channel in workspace.channels.all():
-        parser = LoadHistory(workspace)
-        history = parser.load_history(workspace)
+        print(channel.name)
+        parser.switch_channel(channel.name)
+        history = parser.load_history(channel.name)
         messages_obj = [
             Message(**message) for message in history
         ]
