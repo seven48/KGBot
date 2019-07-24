@@ -20,6 +20,7 @@ from time import sleep
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import JavascriptException
 from splinter import Browser
+from xvfbwrapper import Xvfb
 
 from django.apps import apps
 
@@ -37,8 +38,12 @@ class BaseSlackParser:
                  browser="firefox",
                  executable_path="./bot/core/drivers/geckodriver",
                  browser_window_size=(1920, 1080),
-                 page_load_timeout=30, sticky_timeout=30):
+                 page_load_timeout=30, sticky_timeout=30, headless=True):
         self._base_addr = base_addr
+        self._headless = headless
+        if self._headless:
+            self.xvfb = Xvfb()
+            self.xvfb.start()
         self.browser = Browser(browser, headless=False, wait_time=30,
                                executable_path=executable_path)
         self.browser.driver.implicitly_wait(sticky_timeout)
@@ -47,6 +52,8 @@ class BaseSlackParser:
         self.browser.visit(self._base_addr)
 
     def __del__(self):
+        if self._headless:
+            self.xvfb.stop()
         self.browser.quit()
 
 
