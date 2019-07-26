@@ -12,7 +12,7 @@ def send_message_to_rocket(rocket, message, channel, delay=1):
     time.sleep(delay)
     try:
         rocket.chat_post_message(message, channel=channel)
-    except:
+    except:  # noqa: E722
         pass
 
 
@@ -53,5 +53,6 @@ def load_history(pk):
         ]
         Message.objects.bulk_create(messages_obj)
         for message in history:
-            send_message_to_rocket(rocket, f"{channel.name}: {message['text']}",
+            send_message_to_rocket(rocket,
+                                   f"{channel.name}: {message['text']}",
                                    ROCKET_CHANNEL)
