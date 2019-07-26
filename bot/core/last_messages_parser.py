@@ -46,12 +46,15 @@ class LastMessagesParser(BaseWorkspaceParser):
                 if author_elem:
                     author = author_elem.text
 
+                if link in list(map(lambda elem: elem["link"], messages_list)):
+                    continue
+
                 regexp = r'.+\/\w(\d+)$'
                 timestamp = re.match(regexp, link).group(1)
                 timestamp = int(timestamp)
                 message_datetime = parse_timestamp(timestamp)
                 try:
-                    self.Message.objects.get(link=link)
+                    result = self.Message.objects.get(link=link)
                 except:  # noqa: E722
                     message_obj = {
                         'author': author,
@@ -62,7 +65,16 @@ class LastMessagesParser(BaseWorkspaceParser):
                     messages_list.append(message_obj)
 
                 else:
-                    last_scroll = True
+                    if result:
+                        last_scroll = True
+                    else:
+                        message_obj = {
+                            'author': author,
+                            'text': message.text,
+                            'datetime': message_datetime,
+                            'link': link
+                        }
+                        messages_list.append(message_obj)
 
             if last_scroll or (curr_scroll >= max_scrolls):
                 break
@@ -71,4 +83,5 @@ class LastMessagesParser(BaseWorkspaceParser):
                 self.scroll_top()
                 time.sleep(2)
                 self.reload_source()
+        print(messages_list)
         return messages_list

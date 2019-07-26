@@ -89,10 +89,8 @@ class BaseWorkspaceParser(BaseSlackParser):
             if links_list:
                 break
             sleep(1)
-        print(links_list)
 
         for link in links_list:
-            print(link)
             inner_span = link.find(
                 'span',
                 {'class': 'p-channel_sidebar__name'}
