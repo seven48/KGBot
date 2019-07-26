@@ -134,3 +134,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+ROCKET_USER = 'abs_lord'
+ROCKET_PASS = 'pass'
+ROCKET_URL = 'http://127.0.0.1:8006'
+ROCKET_CHANNEL = 'spam'

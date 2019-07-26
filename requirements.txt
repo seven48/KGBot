@@ -3,3 +3,4 @@ celery==4.3
 Django==2.2.3
 splinter==0.11.0
 xvfbwrapper==0.2.9
+rocketchat-API==0.6.34

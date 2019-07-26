@@ -1,4 +1,5 @@
 import re
+import time
 from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
@@ -9,94 +10,58 @@ from bot.core.parser import BaseWorkspaceParser, parse_timestamp
 class LoadHistory(BaseWorkspaceParser):
     """ Channels history parser. """
 
-    def load_history(self, channel_name):
+    def __init__(self, *args, **kwargs):
+        self._soup = BeautifulSoup()
+        super().__init__(*args, **kwargs)
+
+    def reload_source(self):
+        html_source = self.browser.driver.execute_script(
+            "return document.documentElement.outerHTML;")
+        self._soup = BeautifulSoup(html_source, 'html.parser')
+
+    def load_history_v2(self, channel_name, max_scrolls=8):
         self.switch_channel(channel_name)
-
+        self.reload_source()
+        author = "Author"
+        curr_scroll = 0
         messages_list = []
-
-        all_messages = []
-        buffer_first_message_link = None
-        first_message_link = None
-
         while True:
-            self.scroll_top()
+            last_messages = self._soup.find_all('div', class_='c-message')
+            for message in last_messages:
+                try:
+                    link = message.find_all("a",
+                                            class_="c-timestamp")[0].attrs[
+                        "href"]
+                except (AttributeError, IndexError):
+                    continue
 
-            page_html = self.browser.html
-            soup = BeautifulSoup(page_html, 'html.parser')
-
-            checking_messages = soup.findAll(
-                'div',
-                {'class': 'c-virtual_list__item'}
-            )
-
-            # Getting first message
-            for message in checking_messages:
-                message_link = message.find(
-                    'a',
-                    {'class': 'c-timestamp--static'}
+                author_elem = message.find(
+                    'button',
+                    {'class': 'c-message__rollup_member'}
                 )
-                if message_link:
-                    buffer_first_message_link = first_message_link
-                    first_message_link = message_link
-                    break
+                if author_elem:
+                    author = author_elem.text
 
-            if not first_message_link:
-                continue
+                if link in list(map(lambda elem: elem["link"], messages_list)):
+                    continue
 
-            if buffer_first_message_link == first_message_link:
+                regexp = r'.+\/\w(\d+)$'
+                timestamp = re.match(regexp, link).group(1)
+                timestamp = int(timestamp)
+                message_datetime = parse_timestamp(timestamp)
+                message_obj = {
+                    'author': author,
+                    'text': message.text,
+                    'datetime': message_datetime,
+                    'link': link
+                }
+                messages_list.append(message_obj)
+
+            if (curr_scroll >= max_scrolls) or len(messages_list) >= 300:
                 break
-
-            regexp = r'.+\/\w(\d+)$'
-            link = first_message_link['href']
-            timestamp = re.match(regexp, link).group(1)
-            timestamp = int(timestamp)
-            message_datetime = parse_timestamp(timestamp)
-
-            period = timedelta(days=30)
-            minimal_datetime = datetime.now() - period
-
-            if message_datetime < minimal_datetime:
-                break
-
-        all_messages = checking_messages  # TODO Find first
-
-        current_author = 'Author'
-        for message_el in all_messages:
-            author = message_el.find(
-                'button',
-                {'class': 'c-message__rollup_member'}
-            )
-            if author:
-                current_author = author.text
-
-            message_text = message_el.find(
-                'span',
-                {'class': 'c-message__body'}
-            )
-            if not message_text:
-                continue
-            if 'c-message__body--automated' in message_text['class']:
-                continue
-            message_text = message_text.text
-
-            message_url = message_el.find(
-                'a',
-                {'class': 'c-timestamp--static'}
-            )
-            message_url = message_url['href']
-
-            regexp = r'.+\/\w(\d+)$'
-            timestamp = re.match(regexp, message_url).group(1)
-            timestamp = int(timestamp)
-            message_datetime = parse_timestamp(timestamp)
-
-            obj_message = {
-                'author': current_author,
-                'text': message_text,
-                'datetime': message_datetime,
-                'link': message_url
-            }
-
-            messages_list.append(obj_message)
-
+            else:
+                curr_scroll += 1
+                self.scroll_top()
+                time.sleep(2)
+                self.reload_source()
         return messages_list
